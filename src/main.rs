@@ -1,5 +1,7 @@
 use clap::Parser;
 
+use std::process::Command;
+
 #[derive(Parser, Debug)]
 #[clap(author = "Thomas Laflamme", version = "0.1", about = "Utility to compare your program's output to the expected output")]
 struct Args {
@@ -24,5 +26,12 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
-    dbg!(args);
+    //dbg!(args);
+
+    let prog_output = Command::new(args.prog)
+        .args(args.prog_args)
+        .output()
+        .expect("failed to execute process");
+
+    dbg!(prog_output.stdout);
 }
