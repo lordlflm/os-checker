@@ -27,19 +27,27 @@ struct Args {
     no_space_format: bool,
 }
 
-#[derive(Default)]
-struct OutputT {
-    lines: Vec<String>,
+#[derive(Debug)]                                                                         //Should Line struct be in OutputT struct??? 
+struct Line {
+    line: String,
+    matched: bool,
+    expected: bool,
 }
 
-fn string_to_out_t(s: String, o: &mut OutputT) {
+#[derive(Default)]
+struct OutputT {
+    lines: Vec<Line>,
+}
+
+fn string_to_out_t(s: String, o: &mut OutputT, exp: bool) {
     let v: Vec<_> = s.match_indices("\n").collect();
 
     let mut begin: usize = 0;
-    let mut end: usize;
+    let mut end: usize;    
     for (i, _) in v {
         end = i;
-        o.lines.push(s[begin..end].to_string());
+        let l = Line { line: s[begin..end].to_string(), matched: false, expected: exp };
+        o.lines.push(l);
         begin = end + 1;
     }
 }
@@ -100,8 +108,8 @@ fn main() {
     let mut prog_out_t: OutputT = Default::default();
     let mut exp_out_t: OutputT = Default::default();
 
-    string_to_out_t(prog_out, &mut prog_out_t);         // is it correct here to not pass reference so the function sort of free content?
-    string_to_out_t(exp_out, &mut exp_out_t);
+    string_to_out_t(prog_out, &mut prog_out_t, false);         // is it correct here to not pass reference so the function sort of free content?
+    string_to_out_t(exp_out, &mut exp_out_t, true);
 
     dbg!(&prog_out_t.lines);
     dbg!(&exp_out_t.lines);
@@ -123,10 +131,10 @@ fn main() {
                     //TODO remove following
                     mismatch_i = 0;
                 } else {
-                    mismatch_i = cmp_order(&prog_out_ln, &exp_out_ln, args.no_space_format);
+                    mismatch_i = cmp_order(&prog_out_ln.line, &exp_out_ln.line, args.no_space_format);
                 }
 
-                debug_loop(mismatch_i, &prog_out_ln);
+                debug_loop(mismatch_i, &prog_out_ln.line);
             },
 
             (Some(prog_out_ln), None) => {
