@@ -28,11 +28,11 @@ struct Args {
 }
 
 #[derive(Default)]
-struct OutputType {
+struct OutputT {
     lines: Vec<String>,
 }
 
-fn string_to_output_type(s: String, o: &mut OutputType) {
+fn string_to_out_t(s: String, o: &mut OutputT) {
     let v: Vec<_> = s.match_indices("\n").collect();
 
     let mut begin: usize = 0;
@@ -45,7 +45,7 @@ fn string_to_output_type(s: String, o: &mut OutputType) {
 }
 
 #[allow(unused)]
-fn compare_order(s: &String, e: &String, no_space_format: bool) -> u32 {
+fn cmp_order(s: &String, e: &String, no_space_format: bool) -> u32 {
 
     //TODO trim all whitespaces then compare if no_space_format
 
@@ -61,7 +61,7 @@ fn compare_order(s: &String, e: &String, no_space_format: bool) -> u32 {
 }
 
 #[allow(unused)]
-fn compare_disorder(s: &String, e: &Vec<String>, no_space_format: bool) -> u32 {
+fn cmp_disorder(s: &String, e: &Vec<String>, no_space_format: bool) -> u32 {
     
     0
 }
@@ -82,7 +82,7 @@ fn main() {
     dbg!(&args);
 
     // run sub-process and get output
-    let program_output_content: String = String::from_utf8(
+    let prog_out: String = String::from_utf8(
         Command::new(&args.program)
             .args(&args.program_arguments)
             .output()
@@ -91,27 +91,27 @@ fn main() {
         .unwrap();
 
     // read expected output file
-    let expected_output_content: String = fs::read_to_string(&args.expected)
+    let exp_out: String = fs::read_to_string(&args.expected)
         .expect(&("failed to open file ".to_owned() + &args.expected));
 
-    //dbg!(&expected_output_content);
-    //dbg!(&program_output_content);
-                                                                                // Maybe its better to have something like `let expected_output = string_to_output_type(expected_output_content)` ???
-    let mut program_output: OutputType = Default::default();
-    let mut expected_output: OutputType = Default::default();
+    //dbg!(&exp_out);
+    //dbg!(&prog_out);
+                                                                                // Maybe its better to have something like `let exp_out_t = string_to_out_t(exp_out)` ???
+    let mut prog_out_t: OutputT = Default::default();
+    let mut exp_out_t: OutputT = Default::default();
 
-    string_to_output_type(program_output_content, &mut program_output);         // is it correct here to not pass reference so the function sort of free content?
-    string_to_output_type(expected_output_content, &mut expected_output);
+    string_to_out_t(prog_out, &mut prog_out_t);         // is it correct here to not pass reference so the function sort of free content?
+    string_to_out_t(exp_out, &mut exp_out_t);
 
-    dbg!(&program_output.lines);
-    dbg!(&expected_output.lines);
+    dbg!(&prog_out_t.lines);
+    dbg!(&exp_out_t.lines);
 
     #[allow(unused_assignments)]
     let mut mismatch_i: u32;
 
     //loop test
-    let mut it_prog_out = program_output.lines.iter();
-    let mut it_exp_out = expected_output.lines.iter();
+    let mut it_prog_out = prog_out_t.lines.iter();
+    let mut it_exp_out = exp_out_t.lines.iter();
 
     loop {
         match (it_prog_out.next(), it_exp_out.next()) {
@@ -119,11 +119,11 @@ fn main() {
             (Some(prog_out_ln), Some(exp_out_ln)) => {
                 if args.no_line_order {
                     //TODO:
-                    //mismatch_i = compare_disorder(&program_output_l, &expected_output.lines, args.no_space_format);
+                    //mismatch_i = cmp_disorder(&prog_out_t_l, &exp_out_t.lines, args.no_space_format);
                     //TODO remove following
                     mismatch_i = 0;
                 } else {
-                    mismatch_i = compare_order(&prog_out_ln, &exp_out_ln, args.no_space_format);
+                    mismatch_i = cmp_order(&prog_out_ln, &exp_out_ln, args.no_space_format);
                 }
 
                 debug_loop(mismatch_i, &prog_out_ln);
