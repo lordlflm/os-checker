@@ -53,41 +53,80 @@ fn string_to_out_t(s: String, o: &mut OutputT, exp: bool) {
 }
 
 #[allow(unused)]
-fn cmp_order(s: &String, e: &String, no_space_format: bool) -> u32 {
+fn cmp_order(o: &mut Line, e: &mut Line, no_space_format: bool) {
 
     //TODO trim all whitespaces then compare if no_space_format
 
-    let mut i = 0;
-    for c in s.chars() {
-        if c != e.chars().nth(i).expect("Out of bound operation") {
-            i += 1;
-            return i.try_into().unwrap();
-        }
-        i += 1;
+    if o.line == e.line {
+        o.matched = true;
+        e.matched = true;
     }
-    0
 }
 
 #[allow(unused)]
-fn cmp_disorder(s: &String, e: &Vec<String>, no_space_format: bool) -> u32 {
+fn cmp_disorder(s: &Line, e: &Vec<Line>, no_space_format: bool) {
     
-    0
 }
 
-// TODO remove
-fn debug_loop(mismatch_i: u32, prog_out_ln: &String) {
-    //DEBUG
-    if mismatch_i != 0 {
-        println!("{color_red}Mismatch: {}", &prog_out_ln);
-    } else {
-        println!("{color_green}{}", &prog_out_ln)
+fn print_result(prog_out_t: OutputT, exp_out_t: OutputT) {
+    //TODO:
+    // print output/expected side by side with line number. Missing lines should be red in output
+    //
+    // if order:
+    //      enumerate output/expected with line numbers
+    //
+    // if not_order:
+    //      enumerate missing lines
+    //
+    //NOTE: 
+    // whitespace option should differentiate between only whitespace difference or text difference
+    //
+    // if whitespace_diff_only:
+    //      red padding for too many spaces in output/pointing arrow for where spaces were expected
+
+    let mut it_prog_out = prog_out_t.lines.iter();
+    let mut it_exp_out = exp_out_t.lines.iter();
+    let mut i = 1;
+
+    println!("{}\nLINES{}| {}ACTUAL OUTPUT{}|{}EXPECTED OUTPUT{}\n{}|{}|{}",
+        "_".repeat(200), 
+        " ".repeat(5), 
+        " ".repeat(37), 
+        " ".repeat(40), 
+        " ".repeat(40), 
+        " ".repeat(42),
+        "_".repeat(10),
+        "_".repeat(91),
+        "_".repeat(97));
+
+    loop {
+
+        match (it_prog_out.next(), it_exp_out.next()) {
+            (Some(prog_out_ln), Some(exp_out_ln)) => {
+                let left_ofst: String = " ".repeat(10 - i.to_string().chars().count());
+                let mid_ofst: String = " ".repeat(100 - i.to_string().chars().count() - left_ofst.chars().count() - prog_out_ln.line.chars().count());
+                
+                if !prog_out_ln.matched {
+                    println!("{style_bold}{color_white}{}{style_reset}{}| {color_red}{}{color_reset}{}| {color_white}{}", i, left_ofst, prog_out_ln.line, mid_ofst, exp_out_ln.line);
+                } else {
+                    println!("{style_bold}{color_white}{}{style_reset}{}| {color_green}{}{color_reset}{}| {color_white}{}", i, left_ofst, prog_out_ln.line, mid_ofst, exp_out_ln.line);
+                }
+            },
+            (Some(prog_out_ln), None) => {
+
+            },
+            (None, Some(exp_out_ln)) => {
+
+            },
+            (None, None) => break
+        }
+        i += 1;
     }
 }
 
-
 fn main() {
     let args: Args = Args::parse();
-    dbg!(&args);
+    //dbg!(&args);
 
     // run sub-process and get output
     let prog_out: String = String::from_utf8(
@@ -111,58 +150,32 @@ fn main() {
     string_to_out_t(prog_out, &mut prog_out_t, false);         // is it correct here to not pass reference so the function sort of free content?
     string_to_out_t(exp_out, &mut exp_out_t, true);
 
-    dbg!(&prog_out_t.lines);
-    dbg!(&exp_out_t.lines);
-
-    #[allow(unused_assignments)]
-    let mut mismatch_i: u32;
-
-    //loop test
-    let mut it_prog_out = prog_out_t.lines.iter();
-    let mut it_exp_out = exp_out_t.lines.iter();
-
+    // dbg!(&prog_out_t.lines);
+    // dbg!(&exp_out_t.lines);
+    
+    //loop that performs the test
+    let mut it_prog_out = prog_out_t.lines.iter_mut();
+    let mut it_exp_out = exp_out_t.lines.iter_mut();
     loop {
-        match (it_prog_out.next(), it_exp_out.next()) {
-
+        match (&mut it_prog_out.next(), &mut it_exp_out.next()) {
             (Some(prog_out_ln), Some(exp_out_ln)) => {
                 if args.no_line_order {
                     //TODO:
-                    //mismatch_i = cmp_disorder(&prog_out_t_l, &exp_out_t.lines, args.no_space_format);
+                    //cmp_disorder(&prog_out_t_l, &exp_out_t.lines, args.no_space_format);
                     //TODO remove following
-                    mismatch_i = 0;
                 } else {
-                    mismatch_i = cmp_order(&prog_out_ln.line, &exp_out_ln.line, args.no_space_format);
+                    cmp_order(prog_out_ln, exp_out_ln, args.no_space_format);
                 }
-
-                debug_loop(mismatch_i, &prog_out_ln.line);
             },
-
-            (Some(prog_out_ln), None) => {
-
-            },
-
-            (None, Some(prog_exp_ln)) => {
-
-            },
-
+            (Some(prog_out_ln), None) => prog_out_ln.expected = true,
+            (None, Some(exp_out_ln)) => exp_out_ln.expected = false,
             (None, None) => break
         }
-        
-        
     }
 
-    //TODO:
-    // print output/expected side by side with line number. Missing lines should be red in output
-    //
-    // if order:
-    //      enumerate output/expected with line numbers
-    //
-    // if not_order:
-    //      enumerate missing lines
-    //
-    //NOTE: 
-    // whitespace option should differentiate between only whitespace difference or text difference
-    //
-    // if whitespace_diff_only:
-    //      red padding for too many spaces in output/pointing arrow for where spaces were expected
+    print_result(prog_out_t, exp_out_t);
+
+    // dbg!(&prog_out_t.lines);
+    // dbg!(&exp_out_t.lines);
+
 }
