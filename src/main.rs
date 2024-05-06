@@ -52,24 +52,11 @@ fn string_to_out_t(s: String, o: &mut OutputT, exp: bool) {
     }
 }
 
-#[allow(unused)]
-fn cmp_order(o: &mut Line, e: &mut Line, no_space_format: bool) {
-
-    //TODO trim all whitespaces then compare if no_space_format
-
-    if o.line == e.line {
-        o.matched = true;
-        e.matched = true;
-    }
-}
-
-#[allow(unused)]
-fn cmp_disorder(s: &Line, e: &Vec<Line>, no_space_format: bool) {
-    
-}
-
 fn print_result(prog_out_t: OutputT, exp_out_t: OutputT) {
     //TODO:
+    // print options passed
+    // print joke
+    //
     // print output/expected side by side with line number. Missing lines should be red in output
     //
     // if order:
@@ -100,16 +87,25 @@ fn print_result(prog_out_t: OutputT, exp_out_t: OutputT) {
         "_".repeat(97));
 
     loop {
-
         match (it_prog_out.next(), it_exp_out.next()) {
             (Some(prog_out_ln), Some(exp_out_ln)) => {
                 let left_ofst: String = " ".repeat(10 - i.to_string().chars().count());
                 let mid_ofst: String = " ".repeat(100 - i.to_string().chars().count() - left_ofst.chars().count() - prog_out_ln.line.chars().count());
                 
                 if !prog_out_ln.matched {
-                    println!("{style_bold}{color_white}{}{style_reset}{}| {color_red}{}{color_reset}{}| {color_white}{}", i, left_ofst, prog_out_ln.line, mid_ofst, exp_out_ln.line);
+                    println!("{style_bold}{color_white}{}{style_reset}{}| {color_red}{}{color_reset}{}| {color_white}{}",
+                        i, 
+                        left_ofst, 
+                        prog_out_ln.line, 
+                        mid_ofst, 
+                        exp_out_ln.line);
                 } else {
-                    println!("{style_bold}{color_white}{}{style_reset}{}| {color_green}{}{color_reset}{}| {color_white}{}", i, left_ofst, prog_out_ln.line, mid_ofst, exp_out_ln.line);
+                    println!("{style_bold}{color_white}{}{style_reset}{}| {color_green}{}{color_reset}{}| {color_white}{}", 
+                        i, 
+                        left_ofst, 
+                        prog_out_ln.line, 
+                        mid_ofst, 
+                        exp_out_ln.line);
                 }
             },
             (Some(prog_out_ln), None) => {
@@ -126,7 +122,6 @@ fn print_result(prog_out_t: OutputT, exp_out_t: OutputT) {
 
 fn main() {
     let args: Args = Args::parse();
-    //dbg!(&args);
 
     // run sub-process and get output
     let prog_out: String = String::from_utf8(
@@ -140,42 +135,36 @@ fn main() {
     // read expected output file
     let exp_out: String = fs::read_to_string(&args.expected)
         .expect(&("failed to open file ".to_owned() + &args.expected));
-
-    //dbg!(&exp_out);
-    //dbg!(&prog_out);
                                                                                 // Maybe its better to have something like `let exp_out_t = string_to_out_t(exp_out)` ???
-    let mut prog_out_t: OutputT = Default::default();
+    let mut prog_out_t: OutputT = Default::default();                           // or maybe OutputT { lines: Vec::new() }
     let mut exp_out_t: OutputT = Default::default();
 
-    string_to_out_t(prog_out, &mut prog_out_t, false);         // is it correct here to not pass reference so the function sort of free content?
+    string_to_out_t(prog_out, &mut prog_out_t, false);                          // is it correct here to not pass reference so the function sort of free prog_out?
     string_to_out_t(exp_out, &mut exp_out_t, true);
-
-    // dbg!(&prog_out_t.lines);
-    // dbg!(&exp_out_t.lines);
     
     //loop that performs the test
-    let mut it_prog_out = prog_out_t.lines.iter_mut();
-    let mut it_exp_out = exp_out_t.lines.iter_mut();
-    loop {
-        match (&mut it_prog_out.next(), &mut it_exp_out.next()) {
-            (Some(prog_out_ln), Some(exp_out_ln)) => {
-                if args.no_line_order {
-                    //TODO:
-                    //cmp_disorder(&prog_out_t_l, &exp_out_t.lines, args.no_space_format);
-                    //TODO remove following
-                } else {
-                    cmp_order(prog_out_ln, exp_out_ln, args.no_space_format);
-                }
-            },
-            (Some(prog_out_ln), None) => prog_out_ln.expected = true,
-            (None, Some(exp_out_ln)) => exp_out_ln.expected = false,
-            (None, None) => break
+    if args.no_line_order {
+
+    } else {
+        let mut it_prog_out = prog_out_t.lines.iter_mut();
+        let mut it_exp_out = exp_out_t.lines.iter_mut();
+
+        loop {
+            match (&mut it_prog_out.next(), &mut it_exp_out.next()) {
+                (Some(prog_out_ln), Some(exp_out_ln)) => {
+                    //TODO trim all whitespaces then compare if no_space_format
+
+                    if prog_out_ln.line == exp_out_ln.line {
+                        prog_out_ln.matched = true;
+                        exp_out_ln.matched = true;
+                    }
+                },
+                (Some(prog_out_ln), None) => prog_out_ln.expected = true,
+                (None, Some(exp_out_ln)) => exp_out_ln.expected = false,
+                (None, None) => break
+            }
         }
     }
 
     print_result(prog_out_t, exp_out_t);
-
-    // dbg!(&prog_out_t.lines);
-    // dbg!(&exp_out_t.lines);
-
 }
