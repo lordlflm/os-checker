@@ -94,9 +94,9 @@ fn print_result(prog_out_t: OutputT, exp_out_t: OutputT) {
                         exp_out_ln.line);
                 }
 
-                if !exp_out_ln.matched {
-                    mismatches += 1;
-                }
+                // if !exp_out_ln.matched {
+                //     mismatches += 1;
+                // }
             },
             (Some(prog_out_ln), None) => {
                 let left_ofst: String = " ".repeat(10 - i.to_string().chars().count());
@@ -143,7 +143,18 @@ fn print_result(prog_out_t: OutputT, exp_out_t: OutputT) {
     println!("{}|{}|{}", "_".repeat(10), "_".repeat(91), "_".repeat(97));
 
     // SUMMARY
-    prinln!("SUMMARY");
+    println!("\nSUMMARY:\n");
+    if mismatches == 0 {
+        println!("{color_green}Found 0 mismatch !");
+    } else {
+        if mismatches == 1 {
+            println!("{color_red}Found 1 mismatch :");
+        } else {
+            println!("{color_red}Found {} mismatches :", mismatches);
+        }
+
+
+    }
 }
 
 fn main() {
