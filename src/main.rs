@@ -33,9 +33,28 @@ struct Line {
     matched: bool,
 }
 
-#[derive(Default)]
 struct OutputT {
     lines: Vec<Line>,
+}
+
+impl OutputT {
+    fn new(out_string: String) -> Self {
+        let v: Vec<_> = out_string.match_indices("\n").collect();
+        let mut lines = Vec::<Line>::new();
+        let mut begin: usize = 0;
+        let mut end: usize;
+
+        for (i, _) in v {
+            end = i;
+            let l = Line { line: out_string[begin..end].to_string(), matched: false };
+            lines.push(l);
+            begin = end + 1;
+        }
+
+        Self {
+            lines: lines
+        }
+    }
 }
 
 fn string_to_out_t(s: String, o: &mut OutputT) {
@@ -173,11 +192,8 @@ fn main() {
     let exp_out: String = fs::read_to_string(&args.expected)
         .expect(&("failed to open file ".to_owned() + &args.expected));
                                                                                 // Maybe its better to have something like `let exp_out_t = string_to_out_t(exp_out)` ???
-    let mut prog_out_t: OutputT = Default::default();                           // or maybe OutputT { lines: Vec::new() }
-    let mut exp_out_t: OutputT = Default::default();
-
-    string_to_out_t(prog_out, &mut prog_out_t);                          // is it correct here to not pass reference so the function sort of free prog_out?
-    string_to_out_t(exp_out, &mut exp_out_t);
+    let mut prog_out_t: OutputT = OutputT::new(prog_out);                           // or maybe OutputT { lines: Vec::new() }
+    let mut exp_out_t: OutputT = OutputT::new(exp_out);
     
     //loop that performs the test
     if args.no_line_order {
