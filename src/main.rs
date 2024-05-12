@@ -39,8 +39,9 @@ struct OutputT {
 
 impl OutputT {
     fn new(out_string: String) -> Self {
-        let v: Vec<_> = out_string.match_indices("\n").collect();
         let mut lines = Vec::<Line>::new();
+
+        let v: Vec<_> = out_string.match_indices("\n").collect();
         let mut begin: usize = 0;
         let mut end: usize;
 
@@ -57,7 +58,7 @@ impl OutputT {
     }
 }
 
-fn string_to_out_t(s: String, o: &mut OutputT) {
+fn string_to_out_t(s: String, o: &mut OutputT, no_line_order: bool) {
     let v: Vec<_> = s.match_indices("\n").collect();
 
     let mut begin: usize = 0;
@@ -161,6 +162,9 @@ fn print_result(prog_out_t: OutputT, exp_out_t: OutputT) {
     }
     println!("{}|{}|{}", "_".repeat(10), "_".repeat(91), "_".repeat(97));
 
+
+
+
     // SUMMARY
     println!("\nSUMMARY:\n");
     if mismatches == 0 {
@@ -171,8 +175,12 @@ fn print_result(prog_out_t: OutputT, exp_out_t: OutputT) {
         } else {
             println!("{color_red}Found {} mismatches :", mismatches);
         }
+    }
 
-
+    if (no_line_order) {
+        //TODO enumerate expected/unexpected lines
+    } else {
+        //TODO enumerate line numbers + what was expected + what we got
     }
 }
 
@@ -191,8 +199,8 @@ fn main() {
     // read expected output file
     let exp_out: String = fs::read_to_string(&args.expected)
         .expect(&("failed to open file ".to_owned() + &args.expected));
-                                                                                // Maybe its better to have something like `let exp_out_t = string_to_out_t(exp_out)` ???
-    let mut prog_out_t: OutputT = OutputT::new(prog_out);                           // or maybe OutputT { lines: Vec::new() }
+
+    let mut prog_out_t: OutputT = OutputT::new(prog_out);
     let mut exp_out_t: OutputT = OutputT::new(exp_out);
     
     //loop that performs the test
