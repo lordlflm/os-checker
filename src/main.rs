@@ -27,7 +27,7 @@ struct Args {
     no_space_format: bool,
 }
 
-#[derive(Debug, Clone)]                                                                         //Should Line struct be in OutputT struct??? 
+#[derive(Debug, Clone)]
 struct Line {
     line: String,
     matched: bool,
@@ -68,8 +68,9 @@ fn print_result(prog_out_t: OutputT, exp_out_t: OutputT, no_line_order: bool) {
     let mut it_exp_out = exp_out_t.lines.iter();
     let mut mismatches = 0;
     let mut i = 1;
-
-    println!("{}\nLINES{}| {}ACTUAL OUTPUT{}|{}EXPECTED OUTPUT{}\n{}|{}|{}",
+    
+    //print actual output and expected output side-by-side
+    println!("COMPARISON\n{}\nLINES{}| {}ACTUAL OUTPUT{}|{}EXPECTED OUTPUT{}\n{}|{}|{}",
         "_".repeat(200), 
         " ".repeat(5), 
         " ".repeat(37), 
@@ -183,10 +184,7 @@ fn print_result(prog_out_t: OutputT, exp_out_t: OutputT, no_line_order: bool) {
     }
     println!("{}|{}|{}", "_".repeat(10), "_".repeat(91), "_".repeat(97));
 
-
-
-
-    // SUMMARY
+    // print summary
     print!("\nSUMMARY: ");
     if mismatches == 0 {
         println!("{color_green}Found 0 mismatch !\n{color_reset}");
