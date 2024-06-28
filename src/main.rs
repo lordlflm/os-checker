@@ -117,6 +117,8 @@ fn print_result(prog_out_t: OutputT, exp_out_t: OutputT, no_line_order: bool) {
                 if !exp_out_ln.matched && no_line_order {
                     let summary_string = format!("Expected {color_red}\"{}\"{color_reset} (found at line {} of expected output)", exp_out_ln.line, i);
                     summary_string_expected_vec.push(summary_string);
+
+                    mismatches += 1;
                 }
             },
             (Some(prog_out_ln), None) => {
