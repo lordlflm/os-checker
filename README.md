@@ -1,5 +1,7 @@
 # OS-Checker
-Os-Checker stands for output stream checker.
+Ever had a teacher give you a 40 000 long text file that should verify the ouptut of your programming assigment for a certain input?
+
+Os-Checker stands for output stream checker and is meant to act like the `assert-line` feature of the bats testing framework, but easier to use.
 
 ### Usage
 See program usage:
